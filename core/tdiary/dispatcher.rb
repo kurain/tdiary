@@ -82,14 +82,7 @@ module TDiary
 							print body if /HEAD/i !~ @cgi.request_method
 						end
 					rescue TDiary::NotFound
-						if @cgi then
-							print @cgi.header( 'status' => CGI::HTTP_STATUS['NOT_FOUND'], 'type' => 'text/html' )
-						else
-							print "Status: 404 Not Found\n"
-							print "Content-Type: text/html\n\n"
-						end
-						puts "<h1>404 Not Found</h1>"
-						puts "<div>#{' ' * 500}</div>"
+						Utils.render_not_found(@cgi)
 					end
 				rescue TDiary::ForceRedirect
 					Utils.render_force_redirect(tdiary, @cgi)
@@ -158,6 +151,19 @@ module TDiary
 		end
 
 		module Utils
+			# called this method when the client was bot only.
+			def render_not_found(cgi)
+				if cgi then
+					print cgi.header( 'status' => CGI::HTTP_STATUS['NOT_FOUND'], 'type' => 'text/html' )
+				else
+					print "Status: 404 Not Found\n"
+					print "Content-Type: text/html\n\n"
+				end
+				print "<h1>404 Not Found</h1>\n"
+				print "<div>#{' ' * 500}</div>\n"
+			end
+			module_function :render_not_found
+
 			def render_force_redirect(tdiary, cgi)
 					head = {
 						#'Location' => $!.path
