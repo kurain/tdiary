@@ -92,22 +92,7 @@ module TDiary
 						puts "<div>#{' ' * 500}</div>"
 					end
 				rescue TDiary::ForceRedirect
-					head = {
-						#'Location' => $!.path
-						'type' => 'text/html',
-					}
-					head['cookie'] = tdiary.cookies if tdiary && tdiary.cookies.size > 0
-					print @cgi.header( head )
-					print %Q[
-								<html>
-								<head>
-								<meta http-equiv="refresh" content="1;url=#{$!.path}">
-								<title>moving...</title>
-								</head>
-								<body>Wait or <a href="#{$!.path}">Click here!</a></body>
-								</html>]
-					print @cgi.header( head )
-					print body
+					Utils.render_force_redirect(tdiary, @cgi)
 				end
 			end
 		end
@@ -167,12 +152,19 @@ module TDiary
 					print head
 					print body if /HEAD/i !~ @cgi.request_method
 				rescue TDiary::ForceRedirect
+					Utils.render_force_redirect(tdiary, @cgi)
+				end
+			end
+		end
+
+		module Utils
+			def render_force_redirect(tdiary, cgi)
 					head = {
 						#'Location' => $!.path
 						'type' => 'text/html',
 					}
-					head['cookie'] = tdiary.cookies if tdiary.cookies.size > 0
-					print @cgi.header( head )
+					head['cookie'] = tdiary.cookies if tdiary && tdiary.cookies.size > 0
+					print cgi.header( head )
 					print %Q[
 								<html>
 								<head>
@@ -181,8 +173,8 @@ module TDiary
 								</head>
 								<body>Wait or <a href="#{$!.path}">Click here!</a></body>
 								</html>]
-				end
 			end
+			module_function :render_force_redirect
 		end
 
 		TARGET = {
