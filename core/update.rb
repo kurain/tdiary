@@ -13,6 +13,23 @@ rescue NameError
 	$KCODE = 'n'
 end
 
+# TODO duplicated between index.rb and update.rb
+def send_headers( status, headers )
+	STDOUT.print "Status: #{status}\r\n"
+	headers.each { |k, vs|
+		vs.split( "\n" ).each { |v|
+			STDOUT.print "#{k}: #{v}\r\n"
+		}
+	}
+	STDOUT.print "\r\n"
+	STDOUT.flush
+end
+
+def send_body( body )
+	STDOUT.print body
+	STDOUT.flush
+end
+
 begin
 	if FileTest::symlink?( __FILE__ ) then
 		org_path = File::dirname( File::readlink( __FILE__ ) ).untaint
@@ -23,7 +40,10 @@ begin
 	require 'tdiary/dispatcher'
 
 	@cgi = CGI.new
-	TDiary::Dispatcher.update.dispatch_cgi( @cgi )
+	dispatcher = TDiary::Dispatcher.update
+	status, headers, body = *dispatcher.dispatch_cgi( @cgi )
+	send_headers( status, headers )
+	send_body( body )
 
 rescue Exception
 	if @cgi then
