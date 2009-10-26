@@ -37,21 +37,20 @@ begin
 		org_path = File::dirname( __FILE__ ).untaint
 	end
 	$:.unshift( org_path ) unless $:.include?( org_path )
+	require 'cgi'
 	require 'tdiary/dispatcher'
+	require 'tdiary/request'
 
-	@cgi = CGI.new
 	dispatcher = TDiary::Dispatcher.update
-	status, headers, body = *dispatcher.dispatch_cgi( @cgi )
+	request = TDiary::Request.new(ENV)
+	status, headers, body = *dispatcher.dispatch_cgi( request.cgi, request )
 	send_headers( status, headers )
 	send_body( body )
 
 rescue Exception
-	if @cgi then
-		print @cgi.header( 'status' => '500 Internal Server Error', 'type' => 'text/html' )
-	else
-		print "Status: 500 Internal Server Error\n"
-		print "Content-Type: text/html\n\n"
-	end
+	print "Status: 500 Internal Server Error\n"
+	print "Content-Type: text/html\n\n"
+
 	puts "<h1>500 Internal Server Error</h1>"
 	puts "<pre>"
 	puts CGI::escapeHTML( "#{$!} (#{$!.class})" )

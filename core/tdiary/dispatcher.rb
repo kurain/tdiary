@@ -1,3 +1,4 @@
+require 'cgi'
 require 'stringio'
 require 'tdiary'
 require 'tdiary/response'
@@ -6,7 +7,7 @@ require 'tdiary/response_helper'
 module TDiary
 	class Dispatcher
 		class IndexMain
-			def self.run( cgi )
+			def self.run( cgi, request )
 				begin
 					@cgi = cgi
 					conf = TDiary::Config::new( @cgi )
@@ -91,7 +92,7 @@ module TDiary
 		end
 
 		class UpdateMain
-			def self.run( cgi )
+			def self.run( cgi, request )
 				@cgi = cgi
 				conf = TDiary::Config::new( @cgi )
 				tdiary = nil
@@ -207,17 +208,13 @@ module TDiary
 		# 呼び出すためのfacadeになるメソッド。
 		# ここで $stdout/$stderrを差し替えているのが、
 		# 現行の設計だと、cgi.rbなのでSTDOUT/STDERRに出力している。
-		#
-		# TDiary::Request みたいなものを導入できれば、Dispatcherの設計も
-		# みなおせる状態にもっていけるはず(その前提として、cukeでカバーできてることが望ましい)
-		#
-		def dispatch_cgi( cgi = CGI.new )
+		def dispatch_cgi( cgi, request )
 			stdout_orig = $stdout; stderr_orig = $stderr
 			raw_result = StringIO.new
 			begin
 				$stdout = raw_result
 				$stderr = StringIO.new # dummy
-				@target.run( cgi )
+				@target.run( cgi, request )
 				raw_result.rewind
 				response = ResponseHelper.parse( raw_result.read )
 				return response
@@ -226,12 +223,5 @@ module TDiary
 				$stderr = stderr_orig
 			end
 		end
-
-		# こんな感じで呼べるといいのかなあ……
-# 		def dispatch(request)
-# 			# invoke tdiary w/ request and response
-# 			return response
-# 		end
-
 	end
 end

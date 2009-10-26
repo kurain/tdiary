@@ -21,15 +21,15 @@ module Rack
 		end
 
 		def call(env)
+			request = TDiary::Request.new(env)
 			adopt_rack_request_to_plain_old_tdiary_style(env)
-			response = @dispatcher.dispatch_cgi(CGI.new)
+			response = @dispatcher.dispatch_cgi( CGI.new, request )
 			response.to_a
 		end
 
 		private
 		def adopt_rack_request_to_plain_old_tdiary_style(env)
-			req = TDiary::Request.new(env)
-			$RACK_ENV = req.env
+			$RACK_ENV = env
 			env["rack.input"].rewind
 			fake_stdin_as_params
 		end
