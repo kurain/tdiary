@@ -8,16 +8,17 @@ module TDiary
 		class Response
 			attr_reader :body, :status, :headers
 			def initialize(body = [], status = 200, headers = {}, &block)
-				@cgi = CGI.new
 				@body = body
 				@status = status
 				@headers = headers
 				yield self if block_given?
 			end
+			alias :header :headers
 
-			def header
-				@cgi.header(@headers)
+			def to_a
+				[status, headers, body]
 			end
 		end
+
 	end
 end
