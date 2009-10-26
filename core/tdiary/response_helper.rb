@@ -48,13 +48,12 @@ module ResponseHelper
 					key, val = pair[1..-1]
 					headers[key] = val
 				end
-				headers.delete("Status") # for rack lint
 				headers
 			end
 		end
 
 		def extract_status
-			if status = @headers["Status"]
+			if status = @headers.delete("Status")
 				m = status.match(/(\d+)\s(.+)\Z/)
 				HTTPStatus.new(*m[1..2])
 			else
